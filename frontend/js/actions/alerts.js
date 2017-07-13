@@ -10,20 +10,35 @@ const axios = require('../../MapStore2/web/client/libs/ajax');
 
 const DATA_LOADED = 'DATA_LOADED';
 const DATA_LOAD_ERROR = 'DATA_LOAD_ERROR';
+
 const REGIONS_LOADED = 'REGIONS_LOADED';
 const REGIONS_LOAD_ERROR = 'REGIONS_LOAD_ERROR';
 const LOAD_REGIONS = 'LOAD_REGIONS';
 const REGIONS_LOADING = 'REGIONS_LOADING';
+
+const LOAD_EVENTS = 'LOAD_EVENTS';
+const EVENTS_LOADING = 'EVENTS_LOADING';
 const EVENTS_LOADED = 'EVENTS_LOADED';
 const EVENTS_LOAD_ERROR = 'EVENTS_LOAD_ERROR';
+
 const SELECT_REGIONS = 'SELECT_REGIONS';
 const RESET_REGIONS_SELECTION = 'RESET_REGIONS_SELECTION';
+
+const TOGGLE_ENTITY_VALUE = 'TOGGLE_ENTITY_VALUE';
+const TOGGLE_ENTITIES = 'TOGGLE_ENTITIES';
 
 const ADD_EVENT = 'ADD_EVENT';
 const CHANGE_EVENT_PROPERTY = 'CHANGE_EVENT_PROPERTY';
 
 const TOGGLE_DRAW = 'TOGGLE_DRAW';
 const CANCEL_EDIT = 'CANCEL_EDIT';
+
+const SEARCH_TEXT_CHANGE = 'SEARCH_TEXT_CHANGE';
+const RESET_ALERTS_TEXT_SEARCH = 'RESET_ALERTS_TEXT_SEARCH';
+
+const CHANGE_INTERVAL = 'CHANGE_INTERVAL';
+
+const UPDATE_FILTERED_EVENTS = 'UPDATE_FILTERED_EVENTS';
 
 function dataLoaded(entity, data) {
     return {
@@ -105,36 +120,35 @@ function loadRegions(url = '/decat/api/regions', nextPage = false, searchText) {
     };
 }
 
-function eventsLoaded(events, page = 0) {
+function eventsLoaded(events, page = 0, pageSize = 10, queryTime) {
     return {
         type: EVENTS_LOADED,
         events: events.features,
         total: events.count,
-        page
+        page,
+        pageSize,
+        queryTime
     };
 }
-
+function eventsLoading(loading = true) {
+    return {
+        type: EVENTS_LOADING,
+        loading
+    };
+}
 function eventsLoadError(e) {
     return {
         type: EVENTS_LOAD_ERROR,
         error: e
     };
 }
-function loadEvents(url = '/decat/api/alerts', page = 0) {
-    return (dispatch) => {
-        return axios.get(url + '?page=' + (page + 1)).then((response) => {
-            if (typeof response.data === 'object') {
-                dispatch(eventsLoaded(response.data, page));
-            } else {
-                try {
-                    JSON.parse(response.data);
-                } catch (e) {
-                    dispatch(eventsLoadError('API error: ' + e.message));
-                }
-            }
-        }).catch((e) => {
-            dispatch(eventsLoadError(e));
-        });
+function loadEvents(url = '/decat/api/alerts', page = 0, pageSize = 10, filterParams) {
+    return {
+        type: LOAD_EVENTS,
+        url,
+        page,
+        pageSize,
+        filterParams
     };
 }
 function selectRegions(regions) {
@@ -175,8 +189,44 @@ function cancelEdit() {
     };
 }
 
-module.exports = {DATA_LOADED, DATA_LOAD_ERROR, REGIONS_LOADED, REGIONS_LOAD_ERROR, REGIONS_LOADING,
-    EVENTS_LOADED, EVENTS_LOAD_ERROR, LOAD_REGIONS, RESET_REGIONS_SELECTION, SELECT_REGIONS,
-    ADD_EVENT, CHANGE_EVENT_PROPERTY, TOGGLE_DRAW, CANCEL_EDIT,
-    loadHazards, loadLevels, loadRegions, loadEvents, regionsLoaded, regionsLoadError, regionsLoading, selectRegions, resetRegionsSelection,
-    addEvent, changeEventProperty, toggleDraw, cancelEdit};
+function toggleEntityValue(entitiesId, entityIdx, checked) {
+    return {
+        type: TOGGLE_ENTITY_VALUE,
+        entitiesId,
+        entityIdx,
+        checked
+    };
+}
+function toggleEntities(entitiesId, checked) {
+    return {
+        type: TOGGLE_ENTITIES,
+        entitiesId,
+        checked
+    };
+}
+
+function onSearchTextChange(text) {
+    return {
+        type: SEARCH_TEXT_CHANGE,
+        text
+    };
+}
+function resetAlertsTextSearch() {
+    return {
+        type: RESET_ALERTS_TEXT_SEARCH
+    };
+}
+function changeInterval(interval) {
+    return {
+        type: CHANGE_INTERVAL,
+        interval
+    };
+}
+function updateEvents() {
+    return {
+        type: UPDATE_FILTERED_EVENTS
+    };
+}
+
+module.exports = {DATA_LOADED, DATA_LOAD_ERROR, REGIONS_LOADED, REGIONS_LOAD_ERROR, REGIONS_LOADING, EVENTS_LOADED, EVENTS_LOAD_ERROR, LOAD_REGIONS, RESET_REGIONS_SELECTION, SELECT_REGIONS, TOGGLE_ENTITY_VALUE, ADD_EVENT, CHANGE_EVENT_PROPERTY, TOGGLE_DRAW, CANCEL_EDIT, SEARCH_TEXT_CHANGE, RESET_ALERTS_TEXT_SEARCH, CHANGE_INTERVAL, TOGGLE_ENTITIES, EVENTS_LOADING, UPDATE_FILTERED_EVENTS, LOAD_EVENTS, eventsLoading, eventsLoadError, eventsLoaded, loadHazards, loadLevels, loadRegions, loadEvents, regionsLoaded, regionsLoadError, regionsLoading, selectRegions, resetRegionsSelection, toggleEntityValue, addEvent, changeEventProperty, toggleDraw, cancelEdit, onSearchTextChange, resetAlertsTextSearch, changeInterval, toggleEntities, updateEvents};
+

@@ -13,7 +13,8 @@ const assign = require('object-assign');
 const {Accordion, Panel} = require('react-bootstrap');
 
 const LocaleUtils = require('../../MapStore2/web/client/utils/LocaleUtils');
-const {loadRegions, selectRegions, addEvent, changeEventProperty, toggleDraw, cancelEdit} = require('../actions/alerts');
+
+const {loadRegions, selectRegions, addEvent, changeEventProperty, toggleDraw, cancelEdit, toggleEntityValue, onSearchTextChange, resetAlertsTextSearch, toggleEntities, updateEvents, loadEvents} = require('../actions/alerts');
 const {isAuthorized} = require('../utils/SecurityUtils');
 const {connect} = require('react-redux');
 const ReactCSSTransitionGroup = require('react-addons-css-transition-group');
@@ -21,12 +22,20 @@ const ReactCSSTransitionGroup = require('react-addons-css-transition-group');
 const HazardsFilter = connect((state) => ({
     title: "decatwarning.hazardsfilter",
     entities: state.alerts && state.alerts.hazards || []
-}))(require('../components/MultiValueFilter'));
+}), {
+    toggleEntity: toggleEntityValue.bind(null, 'hazards'),
+    toggleEntities: toggleEntities.bind(null, 'hazards'),
+    updateEvents: updateEvents
+    })(require('../components/MultiValueFilter'));
 
 const LevelsFilter = connect((state) => ({
     title: "decatwarning.levelsfilter",
     entities: state.alerts && state.alerts.levels || []
-}))(require('../components/MultiValueFilter'));
+}), {
+    toggleEntity: toggleEntityValue.bind(null, 'levels'),
+    toggleEntities: toggleEntities.bind(null, 'levels'),
+    updateEvents: updateEvents
+})(require('../components/MultiValueFilter'));
 
 const LocationFilter = connect((state) => ({
         regions: state.alerts && state.alerts.regions || {},
@@ -35,15 +44,21 @@ const LocationFilter = connect((state) => ({
  }), {
      loadRegions,
      selectRegions,
-    onUpdate: () => {}})(require('../components/LocationFilter'));
+     onUpdate: updateEvents})(require('../components/LocationFilter'));
 
 const Events = connect((state) => ({
     events: state.alerts && state.alerts.events || [],
     page: state.alerts && state.alerts.eventsInfo && state.alerts.eventsInfo.page || 0,
+    pageSize: state.alerts && state.alerts.eventsInfo && state.alerts.eventsInfo.pageSize || 10,
     total: state.alerts && state.alerts.eventsInfo && state.alerts.eventsInfo.total || 0,
-    isAuthorized
+    isAuthorized,
+    searchInput: state.alerts && state.alerts.searchInput,
+    serchedText: state.alerts && state.alerts.serchedText
 }), {
-    onAddEvent: addEvent
+    onAddEvent: addEvent,
+    onSearchTextChange,
+    resetAlertsTextSearch,
+    loadEvents
 })(require('../components/Events'));
 
 const EventEditor = connect((state) => ({

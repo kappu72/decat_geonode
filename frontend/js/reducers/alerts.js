@@ -6,8 +6,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const {DATA_LOADED, DATA_LOAD_ERROR, REGIONS_LOADED, REGIONS_LOAD_ERROR, EVENTS_LOADED, EVENTS_LOAD_ERROR, REGIONS_LOADING, SELECT_REGIONS, RESET_REGIONS_SELECTION,
-    ADD_EVENT, CHANGE_EVENT_PROPERTY, TOGGLE_DRAW, CANCEL_EDIT} = require('../actions/alerts');
+const {DATA_LOADED, DATA_LOAD_ERROR, REGIONS_LOADED, REGIONS_LOAD_ERROR, EVENTS_LOADED, EVENTS_LOAD_ERROR, REGIONS_LOADING, SELECT_REGIONS, RESET_REGIONS_SELECTION, TOGGLE_ENTITY_VALUE, ADD_EVENT, CHANGE_EVENT_PROPERTY, TOGGLE_DRAW, CANCEL_EDIT, SEARCH_TEXT_CHANGE, RESET_ALERTS_TEXT_SEARCH, CHANGE_INTERVAL,
+TOGGLE_ENTITIES} = require('../actions/alerts');
 
 const assign = require('object-assign');
 
@@ -38,14 +38,17 @@ function alerts(state = null, action) {
             regionsLoading: action.loading
         });
     }
-    case EVENTS_LOADED:
+    case EVENTS_LOADED: {
         return assign({}, state, {
             events: action.events,
             eventsInfo: {
                 page: action.page || 0,
-                total: action.total || 0
+                total: action.total || 0,
+                pageSize: action.pageSize || 10,
+                queryTime: action.queryTime
             }
         });
+    }
     case EVENTS_LOAD_ERROR:
         return assign({}, state, {
             eventsError: action.error
@@ -67,7 +70,6 @@ function alerts(state = null, action) {
             regions: [],
             drawEnabled: false
         });
-
     case CHANGE_EVENT_PROPERTY:
         const newEvent = assign({}, state.currentEvent || {}, {
             [action.property]: action.value
@@ -88,6 +90,21 @@ function alerts(state = null, action) {
             regions: [],
             drawEnabled: false
         });
+    case TOGGLE_ENTITY_VALUE: {
+        const entities = state[action.entitiesId].map((en, idx) => {
+            return idx === action.entityIdx ? assign({}, en, {selected: action.checked}) : en;
+        });
+        return assign({}, state, {[action.entitiesId]: entities});
+    }
+    case TOGGLE_ENTITIES: {
+        return assign({}, state, {[action.entitiesId]: state[action.entitiesId].map((en) => (assign({}, en, {selected: action.checked})))});
+    }
+    case SEARCH_TEXT_CHANGE:
+        return assign({}, state, { searchInput: action.text});
+    case RESET_ALERTS_TEXT_SEARCH:
+        return assign({}, state, { searchInput: undefined});
+    case CHANGE_INTERVAL:
+        return assign({}, state, {currentInterval: action.interval});
     default:
         return state;
     }
